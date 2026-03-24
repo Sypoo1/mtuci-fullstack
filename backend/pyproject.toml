@@ -1,0 +1,51 @@
+[project]
+name = "fastapi-base-app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.16.1",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.12",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.9.1",
+    "pygithub>=2.9.0",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy[asyncio]>=2.0.41",
+    "uvicorn[standard]>=0.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.11.11",
+]
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.pyright]
+exclude = [".venv"]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["./fastapi-application"]
+
+[tool.pytest.ini_options]
+pythonpath = "fastapi-application"
+testpaths = [
+    "tests"
+]
