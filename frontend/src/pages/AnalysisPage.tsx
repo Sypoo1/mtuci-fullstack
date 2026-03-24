@@ -4,31 +4,19 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } fro
 import Navbar from "../components/Navbar";
 import api from "../api/client";
 import type { AnalysisResult } from "../types";
-
-const MOCK_ANALYSIS: AnalysisResult = {
-  id: 1,
-  repository_id: 1,
-  start_date: "2025-03-01",
-  end_date: "2025-03-20",
-  status: "completed",
-  created_at: "2025-03-20T14:32:00Z",
-  contributors: [
-    { id: 1, github_login: "gaearon", avatar_url: "https://avatars.githubusercontent.com/u/810438", commits_count: 42, additions: 1840, deletions: 620, prs_opened: 8, prs_merged: 7, reviews_given: 15, score: 87 },
-    { id: 2, github_login: "sebmarkbage", avatar_url: "https://avatars.githubusercontent.com/u/63648", commits_count: 35, additions: 2100, deletions: 980, prs_opened: 6, prs_merged: 6, reviews_given: 12, score: 82 },
-    { id: 3, github_login: "acdlite", avatar_url: "https://avatars.githubusercontent.com/u/3624098", commits_count: 28, additions: 950, deletions: 310, prs_opened: 5, prs_merged: 4, reviews_given: 18, score: 79 },
-    { id: 4, github_login: "rickhanlonii", avatar_url: "https://avatars.githubusercontent.com/u/2440089", commits_count: 19, additions: 430, deletions: 120, prs_opened: 4, prs_merged: 3, reviews_given: 22, score: 71 },
-    { id: 5, github_login: "gnoff", avatar_url: "https://avatars.githubusercontent.com/u/6885957", commits_count: 12, additions: 280, deletions: 90, prs_opened: 2, prs_merged: 1, reviews_given: 8, score: 45 },
-  ],
-  ai_report: `Общая оценка команды: 8/10
-
-Команда демонстрирует высокую активность в период с 1 по 20 марта. Лидером по вкладу является gaearon (score 87): 42 коммита, 7 из 8 PR смёрджено, активное участие в code review.
-
-sebmarkbage внёс наибольший объём изменений (+2100 строк). Рекомендуется убедиться, что изменения покрыты тестами.
-
-gnoff показывает низкий score (45): мало коммитов, только 1 из 2 PR принят. Рекомендуется провести 1-on-1 и выяснить причины низкой активности.
-
-В целом команда хорошо справляется с code review — среднее время рассмотрения PR составляет 1.5 дня. Рекомендуется поддерживать этот показатель.`,
-};
+import { MOCK_ANALYSIS_RESULT } from "../mocks";
+import {
+  pageWrapper,
+  card,
+  table,
+  tableHeadRow,
+  th,
+  td,
+  sectionTitle,
+  breadcrumbs,
+  breadcrumbLink,
+  scoreColor,
+} from "../styles/common";
 
 export default function AnalysisPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,7 +34,7 @@ export default function AnalysisPage() {
         }
       } catch {
         // Бэкенд недоступен — используем мок
-        setAnalysis(MOCK_ANALYSIS);
+        setAnalysis(MOCK_ANALYSIS_RESULT);
         clearInterval(interval);
       }
     }
@@ -82,27 +70,34 @@ export default function AnalysisPage() {
     );
   }
 
-  const contributors = analysis.contributors ?? [];
+  const contributors = [...(analysis.contributors ?? [])].sort((a, b) => b.score - a.score);
+
+  const totalCommits = contributors.reduce((s, c) => s + c.commits_count, 0);
+  const totalPRs = contributors.reduce((s, c) => s + c.prs_opened, 0);
+  const totalReviews = contributors.reduce((s, c) => s + c.reviews_given, 0);
 
   const commitsData = contributors.map((c) => ({ name: c.github_login, commits: c.commits_count }));
   const prData = contributors.map((c) => ({ name: c.github_login, opened: c.prs_opened, merged: c.prs_merged }));
   const reviewData = contributors.map((c) => ({ name: c.github_login, reviews: c.reviews_given }));
   const scoreData = contributors.map((c) => ({ name: c.github_login, score: Math.round(c.score) }));
 
-  const totalCommits = contributors.reduce((s, c) => s + c.commits_count, 0);
-  const totalPRs = contributors.reduce((s, c) => s + c.prs_opened, 0);
-  const totalReviews = contributors.reduce((s, c) => s + c.reviews_given, 0);
+  const summaryStats = [
+    { label: "Всего коммитов", value: totalCommits },
+    { label: "Pull Requests", value: totalPRs },
+    { label: "Code Reviews", value: totalReviews },
+    { label: "Участников", value: contributors.length },
+  ];
 
   return (
     <div>
       <Navbar />
-      <div style={{ padding: "24px 32px" }}>
+      <div style={pageWrapper}>
 
         {/* Хлебные крошки */}
-        <div style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-          <Link to="/dashboard" style={{ color: "#888" }}>Дашборд</Link>
+        <div style={breadcrumbs}>
+          <Link to="/dashboard" style={breadcrumbLink}>Дашборд</Link>
           {" / "}
-          <Link to={`/repositories/${analysis.repository_id}`} style={{ color: "#888" }}>Репозиторий</Link>
+          <Link to={`/repositories/${analysis.repository_id}`} style={breadcrumbLink}>Репозиторий</Link>
           {" / "}Анализ #{analysis.id}
         </div>
 
@@ -116,13 +111,8 @@ export default function AnalysisPage() {
 
         {/* Сводные метрики */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
-          {[
-            { label: "Всего коммитов", value: totalCommits },
-            { label: "Pull Requests", value: totalPRs },
-            { label: "Code Reviews", value: totalReviews },
-            { label: "Участников", value: contributors.length },
-          ].map((stat) => (
-            <div key={stat.label} style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px", textAlign: "center" }}>
+          {summaryStats.map((stat) => (
+            <div key={stat.label} style={{ ...card, textAlign: "center" }}>
               <div style={{ fontSize: "28px", fontWeight: "bold" }}>{stat.value}</div>
               <div style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>{stat.label}</div>
             </div>
@@ -130,50 +120,48 @@ export default function AnalysisPage() {
         </div>
 
         {/* Таблица участников */}
-        <h3 style={{ marginBottom: "12px" }}>Метрики по участникам</h3>
+        <h3 style={sectionTitle}>Метрики по участникам</h3>
         <div style={{ overflowX: "auto", marginBottom: "24px" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+          <table style={table}>
             <thead>
-              <tr style={{ background: "#f5f5f5" }}>
+              <tr style={tableHeadRow}>
                 {["#", "Участник", "Коммиты", "+Строк", "-Строк", "PR открыто", "PR смёрджено", "Reviews", "Score"].map((h) => (
-                  <th key={h} style={{ padding: "10px", textAlign: "left", borderBottom: "1px solid #ddd", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} style={th}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {contributors
-                .sort((a, b) => b.score - a.score)
-                .map((c, i) => (
-                  <tr key={c.id}>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>{i + 1}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {c.avatar_url && <img src={c.avatar_url} alt="" style={{ width: "24px", height: "24px", borderRadius: "50%" }} />}
-                        {c.github_login}
-                      </div>
-                    </td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>{c.commits_count}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", color: "#16a34a" }}>+{c.additions}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0", color: "#dc2626" }}>-{c.deletions}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>{c.prs_opened}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>{c.prs_merged}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>{c.reviews_given}</td>
-                    <td style={{ padding: "10px", borderBottom: "1px solid #f0f0f0" }}>
-                      <strong style={{ color: c.score >= 70 ? "#16a34a" : c.score >= 40 ? "#ca8a04" : "#dc2626" }}>
-                        {Math.round(c.score)}
-                      </strong>
-                    </td>
-                  </tr>
-                ))}
+              {contributors.map((c, i) => (
+                <tr key={c.id}>
+                  <td style={td}>{i + 1}</td>
+                  <td style={td}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      {c.avatar_url && (
+                        <img src={c.avatar_url} alt="" style={{ width: "24px", height: "24px", borderRadius: "50%" }} />
+                      )}
+                      {c.github_login}
+                    </div>
+                  </td>
+                  <td style={td}>{c.commits_count}</td>
+                  <td style={{ ...td, color: "#16a34a" }}>+{c.additions}</td>
+                  <td style={{ ...td, color: "#dc2626" }}>-{c.deletions}</td>
+                  <td style={td}>{c.prs_opened}</td>
+                  <td style={td}>{c.prs_merged}</td>
+                  <td style={td}>{c.reviews_given}</td>
+                  <td style={td}>
+                    <strong style={{ color: scoreColor(c.score) }}>{Math.round(c.score)}</strong>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
         {/* Графики */}
-        <h3 style={{ marginBottom: "16px" }}>Графики</h3>
+        <h3 style={{ ...sectionTitle, marginBottom: "16px" }}>Графики</h3>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
 
-          <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px" }}>
+          <div style={card}>
             <h4 style={{ margin: "0 0 12px", fontSize: "14px" }}>Коммиты по участникам</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={commitsData}>
@@ -185,7 +173,7 @@ export default function AnalysisPage() {
             </ResponsiveContainer>
           </div>
 
-          <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px" }}>
+          <div style={card}>
             <h4 style={{ margin: "0 0 12px", fontSize: "14px" }}>PR открыто vs смёрджено</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={prData}>
@@ -199,7 +187,7 @@ export default function AnalysisPage() {
             </ResponsiveContainer>
           </div>
 
-          <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px" }}>
+          <div style={card}>
             <h4 style={{ margin: "0 0 12px", fontSize: "14px" }}>Code Reviews по участникам</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={reviewData}>
@@ -211,7 +199,7 @@ export default function AnalysisPage() {
             </ResponsiveContainer>
           </div>
 
-          <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px" }}>
+          <div style={card}>
             <h4 style={{ margin: "0 0 12px", fontSize: "14px" }}>Score по участникам (0–100)</h4>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={scoreData}>

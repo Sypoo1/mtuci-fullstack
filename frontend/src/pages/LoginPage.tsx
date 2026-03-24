@@ -2,12 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
+import { labelLight, input, errorText, btnPrimary } from "../styles/common";
 
-const MOCK_USER = {
-  id: 1,
-  email: "demo@example.com",
-  name: "Demo User",
-};
+const MOCK_USER = { id: 1, email: "demo@example.com", name: "Demo User" };
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -42,7 +39,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {/* Левая панель */}
+      {/* Левая панель — брендинг */}
       <div style={{ flex: 1, background: "#1a1a2e", color: "#fff", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
         <div style={{ fontSize: "32px", marginBottom: "16px" }}>📊</div>
         <h1 style={{ fontSize: "28px", marginBottom: "12px" }}>GitMetrics Analyser</h1>
@@ -66,29 +63,29 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px", maxWidth: "360px" }}>
           <div>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}>Email</label>
+            <label style={labelLight}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              style={{ width: "100%", padding: "8px 12px", border: "1px solid #ccc", borderRadius: "4px", fontSize: "14px" }}
+              style={input}
             />
           </div>
           <div>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "14px" }}>Пароль</label>
+            <label style={labelLight}>Пароль</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              style={{ width: "100%", padding: "8px 12px", border: "1px solid #ccc", borderRadius: "4px", fontSize: "14px" }}
+              style={input}
             />
           </div>
-          {error && <p style={{ color: "red", fontSize: "14px" }}>{error}</p>}
-          <button type="submit" style={{ padding: "10px", background: "#1a1a2e", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "15px" }}>
+          {error && <p style={errorText}>{error}</p>}
+          <button type="submit" style={{ ...btnPrimary, padding: "10px", fontSize: "15px" }}>
             Войти
           </button>
         </form>
