@@ -16,12 +16,6 @@ class RunConfig(BaseModel):
     port: int = 8000
 
 
-class GunicornConfig(BaseModel):
-    host: str = "0.0.0.0"
-    port: int = 8000
-    workers: int = 1
-    timeout: int = 900
-
 
 class LoggingConfig(BaseModel):
     log_level: Literal[
@@ -68,7 +62,6 @@ class Settings(BaseSettings):
         env_prefix="APP_CONFIG__",
     )
     run: RunConfig = RunConfig()
-    gunicorn: GunicornConfig = GunicornConfig()
     logging: LoggingConfig = LoggingConfig()
     api: ApiPrefix = ApiPrefix()
     # db: DatabaseConfig
