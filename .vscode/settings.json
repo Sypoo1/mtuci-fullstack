@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend/fastapi-application"
+  ],
+  "pylance.venvPath": "${workspaceFolder}/backend",
+  "python.analysis.venvPath": "${workspaceFolder}/backend",
+  "python.venvPath": "${workspaceFolder}/backend"
+}
