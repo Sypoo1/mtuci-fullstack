@@ -3,9 +3,9 @@ from pydantic import BaseModel, ConfigDict
 
 class UserBase(BaseModel):
     username: str
-    foo: int
-    bar: int
-
+    email: str
+    password: str
+    is_active: bool 
 
 class UserCreate(UserBase):
     model_config = ConfigDict(

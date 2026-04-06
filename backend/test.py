@@ -6,7 +6,6 @@ from datetime import datetime, timedelta, timezone
 load_dotenv()
 
 github_token = getenv("GITHUB_TOKEN")
-print(github_token)
 auth = Auth.Token(github_token)
 
 g = Github(auth=auth)

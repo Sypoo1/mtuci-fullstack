@@ -1,8 +1,18 @@
 import type { Repository, Analysis, AnalysisResult } from "../types";
 
 export const MOCK_REPOS: Repository[] = [
-  { id: 1, owner: "facebook", name: "react", created_at: "2025-03-01T10:00:00Z" },
-  { id: 2, owner: "tiangolo", name: "fastapi", created_at: "2025-03-10T10:00:00Z" },
+  {
+    id: 1,
+    owner: "facebook",
+    name: "react",
+    created_at: "2025-03-01T10:00:00Z",
+  },
+  {
+    id: 2,
+    owner: "tiangolo",
+    name: "fastapi",
+    created_at: "2025-03-10T10:00:00Z",
+  },
 ];
 
 export const MOCK_ANALYSES: Analysis[] = [
