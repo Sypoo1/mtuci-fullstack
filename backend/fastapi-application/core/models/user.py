@@ -5,7 +5,7 @@ from .mixins.int_id_pk import IntIdPkMixin
 
 
 class User(IntIdPkMixin, Base):
-    username: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
+    hashed_password: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=True)

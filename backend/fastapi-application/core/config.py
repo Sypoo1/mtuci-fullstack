@@ -16,7 +16,6 @@ class RunConfig(BaseModel):
     port: int = 8000
 
 
-
 class LoggingConfig(BaseModel):
     log_level: Literal[
         "debug",
@@ -31,6 +30,9 @@ class LoggingConfig(BaseModel):
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
     users: str = "/users"
+    auth: str = "/auth"
+    repositories: str = "/repositories"
+    analyses: str = "/analyses"
 
 
 class ApiPrefix(BaseModel):
@@ -54,6 +56,17 @@ class DatabaseConfig(BaseModel):
     }
 
 
+class AuthConfig(BaseModel):
+    secret_key: str = "CHANGE_ME_IN_PRODUCTION_USE_LONG_RANDOM_STRING"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 24 hours
+
+
+class OpenAIConfig(BaseModel):
+    api_key: str = ""
+    model: str = "gpt-4o-mini"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=(".env.template", ".env"),
@@ -64,10 +77,11 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     logging: LoggingConfig = LoggingConfig()
     api: ApiPrefix = ApiPrefix()
-    # db: DatabaseConfig
     db: DatabaseConfig = Field(
         default_factory=lambda: DatabaseConfig()  # type: ignore[reportCallIssue]
     )
+    auth: AuthConfig = AuthConfig()
+    openai: OpenAIConfig = OpenAIConfig()
 
 
 settings = Settings()  # type: ignore

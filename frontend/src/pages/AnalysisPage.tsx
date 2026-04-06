@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import Navbar from "../components/Navbar";
 import api from "../api/client";
 import type { AnalysisResult } from "../types";
-import { MOCK_ANALYSIS_RESULT } from "../mocks";
 import {
   pageWrapper,
   card,
@@ -16,11 +15,15 @@ import {
   breadcrumbs,
   breadcrumbLink,
   scoreColor,
+  btnDanger,
 } from "../styles/common";
 
 export default function AnalysisPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [fetchError, setFetchError] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -33,16 +36,41 @@ export default function AnalysisPage() {
           clearInterval(interval);
         }
       } catch {
-        // Бэкенд недоступен — используем мок
-        setAnalysis(MOCK_ANALYSIS_RESULT);
+        setFetchError("Не удалось загрузить результат анализа");
         clearInterval(interval);
       }
     }
 
     fetchAnalysis();
-    interval = setInterval(fetchAnalysis, 3000);
+    interval = setInterval(fetchAnalysis, 5000);
     return () => clearInterval(interval);
   }, [id]);
+
+  async function deleteAnalysis() {
+    if (!analysis) return;
+    if (!confirm("Удалить этот анализ?")) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/api/v1/analyses/${id}`);
+      navigate(`/repositories/${analysis.repository_id}`);
+    } catch {
+      alert("Не удалось удалить анализ");
+      setDeleting(false);
+    }
+  }
+
+  if (fetchError) {
+    return (
+      <div>
+        <Navbar />
+        <div style={{ padding: "60px", textAlign: "center" }}>
+          <div style={{ fontSize: "40px", marginBottom: "16px" }}>✗</div>
+          <h3>{fetchError}</h3>
+          <Link to="/dashboard">← Вернуться на дашборд</Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!analysis || analysis.status === "pending" || analysis.status === "running") {
     return (
@@ -52,6 +80,16 @@ export default function AnalysisPage() {
           <div style={{ fontSize: "40px", marginBottom: "16px" }}>⟳</div>
           <h3>Анализ выполняется...</h3>
           <p style={{ color: "#888" }}>Собираем данные из GitHub API и генерируем AI-отчёт</p>
+          <div style={{ marginTop: "24px", display: "flex", gap: "16px", justifyContent: "center" }}>
+            {analysis && (
+              <Link to={`/repositories/${analysis.repository_id}`} style={{ fontSize: "14px", color: "#1a1a2e" }}>
+                ← Вернуться к репозиторию
+              </Link>
+            )}
+            <Link to="/dashboard" style={{ fontSize: "14px", color: "#888" }}>
+              На дашборд
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -65,6 +103,14 @@ export default function AnalysisPage() {
           <div style={{ fontSize: "40px", marginBottom: "16px" }}>✗</div>
           <h3>Анализ завершился с ошибкой</h3>
           <p style={{ color: "#888" }}>Проверьте GitHub токен и доступность репозитория</p>
+          <div style={{ marginTop: "24px", display: "flex", gap: "16px", justifyContent: "center" }}>
+            <Link to={`/repositories/${analysis.repository_id}`} style={{ fontSize: "14px", color: "#1a1a2e" }}>
+              ← Вернуться к репозиторию
+            </Link>
+            <Link to="/dashboard" style={{ fontSize: "14px", color: "#888" }}>
+              На дашборд
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -102,11 +148,16 @@ export default function AnalysisPage() {
         </div>
 
         {/* Заголовок */}
-        <div style={{ marginBottom: "24px" }}>
-          <h2 style={{ margin: 0 }}>Анализ #{analysis.id}</h2>
-          <p style={{ color: "#888", fontSize: "13px", margin: "4px 0 0" }}>
-            Период: {analysis.start_date} – {analysis.end_date} · {contributors.length} участников
-          </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Анализ #{analysis.id}</h2>
+            <p style={{ color: "#888", fontSize: "13px", margin: "4px 0 0" }}>
+              Период: {analysis.start_date} – {analysis.end_date} · {contributors.length} участников
+            </p>
+          </div>
+          <button onClick={deleteAnalysis} disabled={deleting} style={btnDanger}>
+            {deleting ? "Удаление..." : "🗑 Удалить анализ"}
+          </button>
         </div>
 
         {/* Сводные метрики */}

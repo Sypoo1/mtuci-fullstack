@@ -9,12 +9,15 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
     try {
       await api.post("/api/v1/auth/register", { name, email, password });
       // После регистрации сразу логинимся
@@ -27,14 +30,11 @@ export default function RegisterPage() {
       });
       login(res.data.access_token, meRes.data);
       navigate("/dashboard");
-    } catch {
-      // Бэкенд недоступен — используем мок-регистрацию для демонстрации
-      if (name && email && password) {
-        login("mock-token-for-demo", { id: 1, email, name });
-        navigate("/dashboard");
-      } else {
-        setError("Заполните все поля");
-      }
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? "Ошибка регистрации. Проверьте данные и попробуйте снова.");
+      setLoading(false);
     }
   }
 
@@ -92,8 +92,8 @@ export default function RegisterPage() {
             />
           </div>
           {error && <p style={errorText}>{error}</p>}
-          <button type="submit" style={{ ...btnPrimary, padding: "10px", fontSize: "15px" }}>
-            Зарегистрироваться
+          <button type="submit" disabled={loading} style={{ ...btnPrimary, padding: "10px", fontSize: "15px", opacity: loading ? 0.7 : 1 }}>
+            {loading ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>
       </div>

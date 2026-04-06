@@ -4,18 +4,19 @@ import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
 import { labelLight, input, errorText, btnPrimary } from "../styles/common";
 
-const MOCK_USER = { id: 1, email: "demo@example.com", name: "Demo User" };
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
     try {
       const params = new URLSearchParams();
       params.append("username", email);
@@ -26,14 +27,11 @@ export default function LoginPage() {
       });
       login(res.data.access_token, meRes.data);
       navigate("/dashboard");
-    } catch {
-      // Бэкенд недоступен — используем мок-авторизацию для демонстрации
-      if (email && password) {
-        login("mock-token-for-demo", { ...MOCK_USER, email });
-        navigate("/dashboard");
-      } else {
-        setError("Введите email и пароль");
-      }
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? "Неверный email или пароль");
+      setLoading(false);
     }
   }
 
@@ -85,8 +83,8 @@ export default function LoginPage() {
             />
           </div>
           {error && <p style={errorText}>{error}</p>}
-          <button type="submit" style={{ ...btnPrimary, padding: "10px", fontSize: "15px" }}>
-            Войти
+          <button type="submit" disabled={loading} style={{ ...btnPrimary, padding: "10px", fontSize: "15px", opacity: loading ? 0.7 : 1 }}>
+            {loading ? "Вход..." : "Войти"}
           </button>
         </form>
       </div>

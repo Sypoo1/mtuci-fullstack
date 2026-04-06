@@ -17,11 +17,13 @@ export default function NewRepositoryPage() {
   const [name, setName] = useState("");
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setLoading(true);
     try {
       const res = await api.post("/api/v1/repositories", {
         owner,
@@ -29,9 +31,11 @@ export default function NewRepositoryPage() {
         github_token: token,
       });
       navigate(`/repositories/${res.data.id}`);
-    } catch {
-      // Бэкенд недоступен — переходим к мок-репозиторию
-      navigate("/repositories/1");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? "Не удалось добавить репозиторий. Проверьте данные.");
+      setLoading(false);
     }
   }
 
@@ -90,8 +94,8 @@ export default function NewRepositoryPage() {
             <button type="button" onClick={() => navigate("/dashboard")} style={btnSecondary}>
               Отмена
             </button>
-            <button type="submit" style={btnPrimary}>
-              Сохранить
+            <button type="submit" disabled={loading} style={btnPrimary}>
+              {loading ? "Сохранение..." : "Сохранить"}
             </button>
           </div>
         </form>

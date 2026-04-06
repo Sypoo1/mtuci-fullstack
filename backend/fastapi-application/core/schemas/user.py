@@ -1,27 +1,23 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserBase(BaseModel):
-    username: str
-    email: str
-    password: str
-    is_active: bool 
+    name: str
+    email: EmailStr
+
 
 class UserCreate(UserBase):
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
+    password: str
 
 
 class UserRead(UserBase):
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
-
+    model_config = ConfigDict(from_attributes=True)
     id: int
+    is_active: bool
 
 
-class UserUpdate(UserBase):
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    name: str | None = None
+    email: EmailStr | None = None
+    password: str | None = None

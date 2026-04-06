@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/client";
 import type { Repository, Analysis } from "../types";
-import { MOCK_REPOS, MOCK_ANALYSES } from "../mocks";
 import {
   pageWrapper,
   card,
@@ -22,22 +21,30 @@ import {
 export default function DashboardPage() {
   const [repos, setRepos] = useState<Repository[]>([]);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [reposError, setReposError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     api.get("/api/v1/repositories")
       .then((r) => setRepos(r.data))
-      .catch(() => setRepos(MOCK_REPOS));
+      .catch(() => setReposError("Не удалось загрузить репозитории"));
 
     api.get("/api/v1/analyses")
       .then((r) => setAnalyses(r.data))
-      .catch(() => setAnalyses(MOCK_ANALYSES));
+      .catch(() => {});
   }, []);
 
   async function deleteRepo(id: number) {
     if (!confirm("Удалить репозиторий?")) return;
     await api.delete(`/api/v1/repositories/${id}`).catch(() => {});
     setRepos((prev) => prev.filter((r) => r.id !== id));
+    setAnalyses((prev) => prev.filter((a) => a.repository_id !== id));
+  }
+
+  async function deleteAnalysis(id: number) {
+    if (!confirm("Удалить этот анализ?")) return;
+    await api.delete(`/api/v1/analyses/${id}`).catch(() => {});
+    setAnalyses((prev) => prev.filter((a) => a.id !== id));
   }
 
   return (
@@ -57,6 +64,10 @@ export default function DashboardPage() {
             + Добавить репозиторий
           </button>
         </div>
+
+        {reposError && (
+          <p style={{ color: "#dc2626", fontSize: "14px", marginBottom: "16px" }}>{reposError}</p>
+        )}
 
         {/* Карточки репозиториев */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "32px" }}>
@@ -101,6 +112,7 @@ export default function DashboardPage() {
                 <th style={th}>Статус</th>
                 <th style={th}>Дата</th>
                 <th style={th}></th>
+                <th style={th}></th>
               </tr>
             </thead>
             <tbody>
@@ -118,6 +130,15 @@ export default function DashboardPage() {
                     <Link to={`/analyses/${a.id}`} style={{ fontSize: "13px", color: "#1a1a2e" }}>
                       Открыть →
                     </Link>
+                  </td>
+                  <td style={td}>
+                    <button
+                      onClick={() => deleteAnalysis(a.id)}
+                      style={btnDangerSmall}
+                      title="Удалить анализ"
+                    >
+                      🗑
+                    </button>
                   </td>
                 </tr>
               ))}

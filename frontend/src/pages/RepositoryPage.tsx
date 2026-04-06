@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../api/client";
 import type { Repository, Analysis } from "../types";
-import { MOCK_REPOS, MOCK_ANALYSES } from "../mocks";
 import {
   pageWrapper,
   cardHighlighted,
@@ -13,14 +12,15 @@ import {
   td,
   btnPrimary,
   btnDanger,
+  btnDangerSmall,
   sectionTitle,
   label,
-  input,
   hint,
   breadcrumbs,
   breadcrumbLink,
   statusBadgeStyle,
   statusLabel,
+  errorText,
 } from "../styles/common";
 
 export default function RepositoryPage() {
@@ -31,20 +31,18 @@ export default function RepositoryPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     api.get(`/api/v1/repositories/${id}`)
       .then((r) => setRepo(r.data))
-      .catch(() => {
-        const mockRepo = MOCK_REPOS.find((r) => r.id === Number(id)) ?? MOCK_REPOS[0];
-        setRepo(mockRepo);
-      });
+      .catch(() => setNotFound(true));
 
     api.get(`/api/v1/repositories/${id}/analyses`)
       .then((r) => setAnalyses(r.data))
-      .catch(() => {
-        setAnalyses(MOCK_ANALYSES.filter((a) => a.repository_id === Number(id)));
-      });
+      .catch(() => {});
 
     // Дефолтный период — последние 30 дней
     const end = new Date();
@@ -56,6 +54,7 @@ export default function RepositoryPage() {
 
   async function runAnalysis(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     setLoading(true);
     try {
       const res = await api.post(`/api/v1/repositories/${id}/analyses`, {
@@ -63,9 +62,10 @@ export default function RepositoryPage() {
         end_date: endDate,
       });
       navigate(`/analyses/${res.data.id}`);
-    } catch {
-      // Бэкенд недоступен — переходим к мок-анализу
-      navigate("/analyses/1");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      setError(msg ?? "Не удалось запустить анализ. Проверьте GitHub токен.");
       setLoading(false);
     }
   }
@@ -74,6 +74,31 @@ export default function RepositoryPage() {
     if (!confirm("Удалить репозиторий и все его анализы?")) return;
     await api.delete(`/api/v1/repositories/${id}`).catch(() => {});
     navigate("/dashboard");
+  }
+
+  async function deleteAnalysis(analysisId: number) {
+    if (!confirm("Удалить этот анализ?")) return;
+    setDeletingId(analysisId);
+    try {
+      await api.delete(`/api/v1/analyses/${analysisId}`);
+      setAnalyses((prev) => prev.filter((a) => a.id !== analysisId));
+    } catch {
+      alert("Не удалось удалить анализ");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  if (notFound) {
+    return (
+      <div>
+        <Navbar />
+        <div style={{ padding: "60px", textAlign: "center" }}>
+          <h3>Репозиторий не найден</h3>
+          <Link to="/dashboard">← Вернуться на дашборд</Link>
+        </div>
+      </div>
+    );
   }
 
   if (!repo) {
@@ -134,6 +159,7 @@ export default function RepositoryPage() {
               {loading ? "Запуск..." : "▶ Запустить анализ"}
             </button>
           </form>
+          {error && <p style={{ ...errorText, marginTop: "8px" }}>{error}</p>}
           <p style={hint}>
             Система соберёт коммиты, PR и code review за указанный период через GitHub API
           </p>
@@ -152,6 +178,7 @@ export default function RepositoryPage() {
                 <th style={th}>Статус</th>
                 <th style={th}>Запущен</th>
                 <th style={th}></th>
+                <th style={th}></th>
               </tr>
             </thead>
             <tbody>
@@ -169,6 +196,16 @@ export default function RepositoryPage() {
                         Открыть результат →
                       </Link>
                     )}
+                  </td>
+                  <td style={td}>
+                    <button
+                      onClick={() => deleteAnalysis(a.id)}
+                      disabled={deletingId === a.id}
+                      style={btnDangerSmall}
+                      title="Удалить анализ"
+                    >
+                      {deletingId === a.id ? "..." : "🗑"}
+                    </button>
                   </td>
                 </tr>
               ))}
