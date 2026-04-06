@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import ReactMarkdown from "react-markdown";
 import Navbar from "../components/Navbar";
 import api from "../api/client";
 import type { AnalysisResult } from "../types";
@@ -272,12 +273,12 @@ export default function AnalysisPage() {
                 🤖
               </div>
               <div>
-                <div style={{ fontWeight: "bold", fontSize: "14px" }}>AI-отчёт (сгенерирован GPT-4o-mini)</div>
+                <div style={{ fontWeight: "bold", fontSize: "14px" }}>AI-отчёт</div>
                 <div style={{ fontSize: "12px", color: "#888" }}>Автоматический анализ на основе собранных метрик</div>
               </div>
             </div>
-            <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#333", whiteSpace: "pre-wrap" }}>
-              {analysis.ai_report}
+            <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#333" }}>
+              <ReactMarkdown>{analysis.ai_report}</ReactMarkdown>
             </div>
           </div>
         )}

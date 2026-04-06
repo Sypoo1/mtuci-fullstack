@@ -144,7 +144,15 @@ async def generate_ai_report(
     end_date: str,
 ) -> str:
     """
-    Generate an AI report using OpenAI GPT-4o-mini.
+    Generate an AI report using an OpenAI-compatible API.
+
+    Supports both OpenAI and OpenRouter (or any OpenAI-compatible provider):
+    - Set APP_CONFIG__OPENAI__API_KEY to your API key
+    - Set APP_CONFIG__OPENAI__BASE_URL to the provider base URL
+      (e.g. https://openrouter.ai/api/v1 for OpenRouter, empty for OpenAI)
+    - Set APP_CONFIG__OPENAI__MODEL to the model name
+      (e.g. openai/gpt-4o-mini for OpenRouter, gpt-4o-mini for OpenAI)
+
     Falls back to a local plain-text report if the API key is not set.
 
     Only the top *_MAX_CONTRIBUTORS_IN_PROMPT* contributors (by score) are
@@ -153,13 +161,20 @@ async def generate_ai_report(
     from core.config import settings
 
     if not settings.openai.api_key:
-        log.info("OpenAI API key not configured — using local report generator.")
+        log.info("LLM API key not configured — using local report generator.")
         return _local_report(scored, start_date, end_date)
 
     try:
         from openai import AsyncOpenAI
 
-        client = AsyncOpenAI(api_key=settings.openai.api_key)
+        # Build client — pass base_url only if explicitly configured
+        # This allows using OpenRouter, Azure OpenAI, or any compatible provider
+        client_kwargs: dict = {"api_key": settings.openai.api_key}
+        if settings.openai.base_url:
+            client_kwargs["base_url"] = settings.openai.base_url
+            log.info("Using custom LLM base URL: %s", settings.openai.base_url)
+
+        client = AsyncOpenAI(**client_kwargs)
 
         # Sort by score desc and cap at _MAX_CONTRIBUTORS_IN_PROMPT
         top_contributors = sorted(scored, key=lambda x: x.score, reverse=True)[:_MAX_CONTRIBUTORS_IN_PROMPT]
@@ -196,5 +211,5 @@ async def generate_ai_report(
         return response.choices[0].message.content or _local_report(scored, start_date, end_date)
 
     except Exception as exc:
-        log.warning("OpenAI call failed: %s — falling back to local report.", exc)
+        log.warning("LLM API call failed: %s — falling back to local report.", exc)
         return _local_report(scored, start_date, end_date)
