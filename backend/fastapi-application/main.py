@@ -13,7 +13,6 @@ logging.basicConfig(
 
 main_app = create_app(create_custom_static_urls=True)
 
-# ─── CORS ────────────────────────────────────────────────────────────────────
 main_app.add_middleware(
     CORSMiddleware,
     allow_origins=[

@@ -20,7 +20,6 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await api.post("/api/v1/auth/register", { name, email, password });
-      // После регистрации сразу логинимся
       const params = new URLSearchParams();
       params.append("username", email);
       params.append("password", password);
@@ -40,7 +39,6 @@ export default function RegisterPage() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {/* Левая панель — брендинг */}
       <div style={{ flex: 1, background: "#1a1a2e", color: "#fff", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
         <div style={{ fontSize: "32px", marginBottom: "16px" }}>📊</div>
         <h1 style={{ fontSize: "28px", marginBottom: "12px" }}>GitMetrics Analyser</h1>
@@ -49,7 +47,6 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      {/* Правая панель — форма */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
         <h2 style={{ marginBottom: "8px" }}>Создать аккаунт</h2>
         <p style={{ color: "#888", marginBottom: "24px" }}>

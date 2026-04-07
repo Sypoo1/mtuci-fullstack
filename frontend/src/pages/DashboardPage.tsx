@@ -52,7 +52,6 @@ export default function DashboardPage() {
       <Navbar />
       <div style={pageWrapper}>
 
-        {/* Заголовок */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
           <div>
             <h2 style={{ margin: 0 }}>Мои репозитории</h2>
@@ -69,7 +68,6 @@ export default function DashboardPage() {
           <p style={{ color: "#dc2626", fontSize: "14px", marginBottom: "16px" }}>{reposError}</p>
         )}
 
-        {/* Карточки репозиториев */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "32px" }}>
           {repos.map((repo) => (
             <div key={repo.id} style={card}>
@@ -99,7 +97,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Последние анализы */}
         <h3 style={sectionTitle}>Последние анализы</h3>
         {analyses.length === 0 ? (
           <p style={{ color: "#888", fontSize: "14px" }}>Анализов пока нет.</p>

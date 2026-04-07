@@ -1,20 +1,3 @@
-"""
-AI scoring module.
-
-Computes a normalized 0-100 score for each contributor based on their
-GitHub metrics, then generates a team-level AI report using OpenAI.
-
-The score formula (heuristic, tunable):
-  score = 0.35 * commits_norm
-        + 0.20 * additions_norm
-        + 0.20 * prs_merged_norm
-        + 0.25 * reviews_norm
-  scaled to 0-100.
-
-If the OpenAI API key is not configured, the report is generated locally
-as a plain-text summary (no external calls).
-"""
-
 from __future__ import annotations
 
 import logging
@@ -37,7 +20,6 @@ class ScoredContributor:
 
 
 def _normalize(values: list[float]) -> list[float]:
-    """Min-max normalize a list of floats to [0, 1]."""
     if not values:
         return values
     mn, mx = min(values), max(values)
@@ -47,10 +29,6 @@ def _normalize(values: list[float]) -> list[float]:
 
 
 def compute_scores(contributors_raw: list[dict]) -> list[ScoredContributor]:
-    """
-    Accept a list of raw contributor dicts (from the GitHub parser) and
-    return ScoredContributor objects with a computed score 0-100.
-    """
     if not contributors_raw:
         return []
 
@@ -90,7 +68,6 @@ def compute_scores(contributors_raw: list[dict]) -> list[ScoredContributor]:
 
 
 def _local_report(scored: list[ScoredContributor], start_date: str, end_date: str) -> str:
-    """Generate a plain-text report without calling any external API."""
     if not scored:
         return "Нет данных для анализа."
 
@@ -133,8 +110,6 @@ def _local_report(scored: list[ScoredContributor], start_date: str, end_date: st
     return "\n".join(lines)
 
 
-# Maximum number of contributors included in the AI prompt.
-# Keeps the prompt size predictable regardless of repo size.
 _MAX_CONTRIBUTORS_IN_PROMPT = 20
 
 
@@ -143,21 +118,6 @@ async def generate_ai_report(
     start_date: str,
     end_date: str,
 ) -> str:
-    """
-    Generate an AI report using an OpenAI-compatible API.
-
-    Supports both OpenAI and OpenRouter (or any OpenAI-compatible provider):
-    - Set APP_CONFIG__OPENAI__API_KEY to your API key
-    - Set APP_CONFIG__OPENAI__BASE_URL to the provider base URL
-      (e.g. https://openrouter.ai/api/v1 for OpenRouter, empty for OpenAI)
-    - Set APP_CONFIG__OPENAI__MODEL to the model name
-      (e.g. openai/gpt-4o-mini for OpenRouter, gpt-4o-mini for OpenAI)
-
-    Falls back to a local plain-text report if the API key is not set.
-
-    Only the top *_MAX_CONTRIBUTORS_IN_PROMPT* contributors (by score) are
-    included in the prompt to keep token usage bounded.
-    """
     from core.config import settings
 
     if not settings.openai.api_key:
@@ -167,8 +127,6 @@ async def generate_ai_report(
     try:
         from openai import AsyncOpenAI
 
-        # Build client — pass base_url only if explicitly configured
-        # This allows using OpenRouter, Azure OpenAI, or any compatible provider
         client_kwargs: dict = {"api_key": settings.openai.api_key}
         if settings.openai.base_url:
             client_kwargs["base_url"] = settings.openai.base_url
@@ -176,7 +134,6 @@ async def generate_ai_report(
 
         client = AsyncOpenAI(**client_kwargs)
 
-        # Sort by score desc and cap at _MAX_CONTRIBUTORS_IN_PROMPT
         top_contributors = sorted(scored, key=lambda x: x.score, reverse=True)[:_MAX_CONTRIBUTORS_IN_PROMPT]
         total = len(scored)
         shown = len(top_contributors)

@@ -37,7 +37,6 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      {/* Левая панель — брендинг */}
       <div style={{ flex: 1, background: "#1a1a2e", color: "#fff", display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
         <div style={{ fontSize: "32px", marginBottom: "16px" }}>📊</div>
         <h1 style={{ fontSize: "28px", marginBottom: "12px" }}>GitMetrics Analyser</h1>
@@ -52,7 +51,6 @@ export default function LoginPage() {
         </ul>
       </div>
 
-      {/* Правая панель — форма */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "48px" }}>
         <h2 style={{ marginBottom: "8px" }}>Войти в аккаунт</h2>
         <p style={{ color: "#888", marginBottom: "24px" }}>

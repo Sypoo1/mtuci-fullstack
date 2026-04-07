@@ -18,9 +18,6 @@ log = logging.getLogger(__name__)
 router = APIRouter(tags=["Analyses"])
 
 
-# ─── Global analyses list (across all user repos) ────────────────────────────
-
-
 @router.get("/analyses", response_model=list[AnalysisRead])
 async def list_all_analyses(
     current_user: CurrentUser,
@@ -29,9 +26,6 @@ async def list_all_analyses(
     repos = await repos_crud.get_repositories_by_user(session, current_user.id)
     repo_ids = [r.id for r in repos]
     return await analyses_crud.get_all_analyses_for_user_repos(session, repo_ids)
-
-
-# ─── Per-repository analyses ──────────────────────────────────────────────────
 
 
 @router.get("/repositories/{repo_id}/analyses", response_model=list[AnalysisRead])
@@ -77,9 +71,6 @@ async def create_analysis(
     return analysis
 
 
-# ─── Single analysis result ───────────────────────────────────────────────────
-
-
 @router.get("/analyses/{analysis_id}", response_model=AnalysisResultRead)
 async def get_analysis(
     analysis_id: int,
@@ -114,10 +105,7 @@ async def delete_analysis(
     await analyses_crud.delete_analysis(session, analysis)
 
 
-# ─── Background task ─────────────────────────────────────────────────────────
-
-# Hard cap: if GitHub API doesn't respond within this many seconds, mark failed.
-_PARSE_TIMEOUT_SECONDS = 5 * 60  # 5 minutes
+_PARSE_TIMEOUT_SECONDS = 5 * 60
 
 
 async def _run_analysis(
@@ -147,9 +135,6 @@ async def _run_analysis(
 
             loop = asyncio.get_event_loop()
 
-            # Wrap the blocking GitHub API call in a timeout so that slow /
-            # unresponsive GitHub endpoints don't leave the analysis stuck in
-            # "running" forever.
             try:
                 parse_result = await asyncio.wait_for(
                     loop.run_in_executor(

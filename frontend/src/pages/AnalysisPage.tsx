@@ -140,7 +140,6 @@ export default function AnalysisPage() {
       <Navbar />
       <div style={pageWrapper}>
 
-        {/* Хлебные крошки */}
         <div style={breadcrumbs}>
           <Link to="/dashboard" style={breadcrumbLink}>Дашборд</Link>
           {" / "}
@@ -148,7 +147,6 @@ export default function AnalysisPage() {
           {" / "}Анализ #{analysis.id}
         </div>
 
-        {/* Заголовок */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
           <div>
             <h2 style={{ margin: 0 }}>Анализ #{analysis.id}</h2>
@@ -161,7 +159,6 @@ export default function AnalysisPage() {
           </button>
         </div>
 
-        {/* Сводные метрики */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
           {summaryStats.map((stat) => (
             <div key={stat.label} style={{ ...card, textAlign: "center" }}>
@@ -171,7 +168,6 @@ export default function AnalysisPage() {
           ))}
         </div>
 
-        {/* Таблица участников */}
         <h3 style={sectionTitle}>Метрики по участникам</h3>
         <div style={{ overflowX: "auto", marginBottom: "24px" }}>
           <table style={table}>
@@ -209,7 +205,6 @@ export default function AnalysisPage() {
           </table>
         </div>
 
-        {/* Графики */}
         <h3 style={{ ...sectionTitle, marginBottom: "16px" }}>Графики</h3>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
 
@@ -265,7 +260,6 @@ export default function AnalysisPage() {
 
         </div>
 
-        {/* AI-отчёт */}
         {analysis.ai_report && (
           <div style={{ border: "1px solid #bfdbfe", borderRadius: "8px", padding: "20px", background: "#eff6ff" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>

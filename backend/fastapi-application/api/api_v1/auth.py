@@ -18,7 +18,6 @@ async def register(
     user_create: UserCreate,
     session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
 ) -> User:
-    # Check email uniqueness
     existing = await session.scalar(select(User).where(User.email == user_create.email))
     if existing:
         raise HTTPException(

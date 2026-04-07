@@ -1,6 +1,3 @@
-"""
-FastAPI dependency: get the currently authenticated user from the JWT token.
-"""
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status

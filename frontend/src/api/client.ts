@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
 });
 
-// Добавляем JWT токен к каждому запросу
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -13,7 +12,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// При 401 — редирект на логин (кроме самих auth-запросов)
 api.interceptors.response.use(
   (response) => response,
   (error) => {

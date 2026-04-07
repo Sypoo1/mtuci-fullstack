@@ -1,7 +1,3 @@
-"""
-JWT creation/verification and password hashing utilities.
-Uses bcrypt directly to avoid passlib compatibility issues with bcrypt >= 4.x.
-"""
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -28,7 +24,6 @@ def create_access_token(subject: int | str) -> str:
 
 
 def decode_access_token(token: str) -> str | None:
-    """Return the 'sub' claim (user id as str) or None if invalid."""
     try:
         payload = jwt.decode(
             token, settings.auth.secret_key, algorithms=[settings.auth.algorithm]

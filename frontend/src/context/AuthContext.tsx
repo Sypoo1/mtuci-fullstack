@@ -18,7 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
   const [user, setUser] = useState<User | null>(null);
 
-  // On mount: if we have a saved token, restore the user profile
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     if (savedToken && !user) {
@@ -28,7 +27,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .then((res) => setUser(res.data))
         .catch(() => {
-          // Token is invalid/expired — clear it
           localStorage.removeItem("token");
           setToken(null);
         });

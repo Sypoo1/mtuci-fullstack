@@ -15,7 +15,6 @@ class Repository(IntIdPkMixin, Base):
     github_token: Mapped[str] = mapped_column(default="")
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
-    # owner FK
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     analyses: Mapped[list["Analysis"]] = relationship(  # noqa: F821

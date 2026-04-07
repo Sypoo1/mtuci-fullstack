@@ -13,9 +13,9 @@ class Analysis(IntIdPkMixin, Base):
     repository_id: Mapped[int] = mapped_column(
         ForeignKey("repositories.id", ondelete="CASCADE")
     )
-    start_date: Mapped[str]  # ISO date string "YYYY-MM-DD"
+    start_date: Mapped[str]
     end_date: Mapped[str]
-    status: Mapped[str] = mapped_column(default="pending")  # pending|running|completed|failed
+    status: Mapped[str] = mapped_column(default="pending")
     ai_report: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 

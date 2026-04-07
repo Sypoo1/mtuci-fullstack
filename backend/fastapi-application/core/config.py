@@ -59,25 +59,12 @@ class DatabaseConfig(BaseModel):
 class AuthConfig(BaseModel):
     secret_key: str = "CHANGE_ME_IN_PRODUCTION_USE_LONG_RANDOM_STRING"
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24  # 24 hours
+    access_token_expire_minutes: int = 60 * 24
 
 
 class OpenAIConfig(BaseModel):
-    """
-    Supports both OpenAI and OpenRouter (OpenAI-compatible).
-
-    For OpenRouter set:
-      APP_CONFIG__OPENAI__API_KEY=sk-or-...
-      APP_CONFIG__OPENAI__BASE_URL=https://openrouter.ai/api/v1
-      APP_CONFIG__OPENAI__MODEL=openai/gpt-4o-mini   (or any OpenRouter model)
-
-    For OpenAI set:
-      APP_CONFIG__OPENAI__API_KEY=sk-...
-      APP_CONFIG__OPENAI__BASE_URL=   (leave empty — uses OpenAI default)
-      APP_CONFIG__OPENAI__MODEL=gpt-4o-mini
-    """
     api_key: str = ""
-    base_url: str = ""   # empty = use OpenAI default; set to https://openrouter.ai/api/v1 for OpenRouter
+    base_url: str = ""
     model: str = "gpt-4o-mini"
 
 

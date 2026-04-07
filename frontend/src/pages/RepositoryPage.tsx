@@ -44,7 +44,6 @@ export default function RepositoryPage() {
       .then((r) => setAnalyses(r.data))
       .catch(() => {});
 
-    // Дефолтный период — последние 30 дней
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - 30);
@@ -115,14 +114,12 @@ export default function RepositoryPage() {
       <Navbar />
       <div style={pageWrapper}>
 
-        {/* Хлебные крошки */}
         <div style={breadcrumbs}>
           <Link to="/dashboard" style={breadcrumbLink}>Дашборд</Link>
           {" / "}
           {repo.owner}/{repo.name}
         </div>
 
-        {/* Заголовок */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
           <div>
             <h2 style={{ margin: 0 }}>{repo.owner} / {repo.name}</h2>
@@ -131,7 +128,6 @@ export default function RepositoryPage() {
           <button onClick={deleteRepo} style={btnDanger}>Удалить</button>
         </div>
 
-        {/* Форма запуска анализа */}
         <div style={cardHighlighted}>
           <h3 style={{ margin: "0 0 16px" }}>Запустить новый анализ</h3>
           <form onSubmit={runAnalysis} style={{ display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
@@ -165,7 +161,6 @@ export default function RepositoryPage() {
           </p>
         </div>
 
-        {/* История анализов */}
         <h3 style={sectionTitle}>История анализов</h3>
         {analyses.length === 0 ? (
           <p style={{ color: "#888", fontSize: "14px" }}>Анализов пока нет. Запустите первый анализ выше.</p>
